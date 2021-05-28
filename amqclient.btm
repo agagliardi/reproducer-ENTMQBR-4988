@@ -1,0 +1,16 @@
+RULE askToFault
+CLASS org.apache.activemq.artemis.core.client.impl.ClientSessionImpl
+METHOD flushAcks
+AT ENTRY
+BIND
+    skip:Object = linked("skip")
+IF skip == null
+DO  
+    link("skip","TRUE");
+    traceln("\n#######  Break the network withint 30 seconds   #######\n");
+    Thread.sleep(30 * 1000);
+    traceln("\n#######  Continue...                            #######\n")
+ENDRULE
+
+
+

@@ -30,8 +30,8 @@ public class Reproducer {
 
     try (final ActiveMQConnectionFactory connectionFactory = new ActiveMQConnectionFactory(brokerURL)) {
       connectionFactory.setUseTopologyForLoadBalancing(false);
-      // connectionFactory.setCallFailoverTimeout(1000);// fail fast
-      // connectionFactory.setCallTimeout(1000);// fail fast
+      connectionFactory.setCallFailoverTimeout(1000);// fail fast
+      connectionFactory.setCallTimeout(1000);// fail fast
       connectionFactory.setReconnectAttempts(-1);
       connectionFactory.setInitialConnectAttempts(10);
       connectionFactory.setConfirmationWindowSize(1024 * 1024);
@@ -47,36 +47,36 @@ public class Reproducer {
         messageConsumer.setMessageListener(message -> {
           try {
             try {
-              log.info("#######  Message received");
-              log.info("#######  Break the network then press ENTER to start rollback!");
-              System.in.read();
+              log.info("Message received");
+              //log.info("Break the network then press ENTER to start rollback!");
+              //System.in.read();
               session.rollback();
-              log.error("#######  Test failed - first rollback must fails");
+              log.error("Test failed - first rollback must fails");
               exit();
             } catch (JMSException jmsException) {
-              log.info("#######  Rollback failed as expected, fix network then press ENTER to retry:{}",
+              log.info("Rollback failed as expected:{},\n###################\nFix the network then press ENTER to continue the test.\n###################",
                   jmsException.getMessage());
               System.in.read();
             }
             try {
               session.rollback();
             } catch (JMSException e) {
-              log.error("#######  Rollback failed agan! give up:{}", e.getMessage());
+              log.error("Rollback failed agan! give up:{}", e.getMessage());
               exit();
             }
-            log.info("####### Setting echo listener");
+            log.info("Setting echo listener, now message should be received but will not as it's a bug");
             try {
               messageConsumer.setMessageListener(message1 -> {
-                log.info("#######  Message received:{}", counter.incrementAndGet());
+                log.info("Message received:{}", counter.incrementAndGet());
                 try {
                   session.commit();
                 } catch (JMSException e) {
-                  log.error("#######  Commit failed :{}", e.getMessage());
+                  log.error("Commit failed :{}", e.getMessage());
                   exit();
                 }
               });
             } catch (JMSException e) {
-              log.error("#######  Unable to use the good listener {}", e.getMessage());
+              log.error("Unable to use the good listener {}", e.getMessage());
               exit();
             }
           } catch (Exception e) {
@@ -86,7 +86,7 @@ public class Reproducer {
         });
 
         System.out.println("CTRL-C to exit");
-        System.out.println("Start producing some message on " + brokerURL + " address " + TOPIC);
+        System.out.println("Start producing some message on " + brokerURL + " address topic://" + TOPIC);
         cdl.await();
 
       }
@@ -94,7 +94,7 @@ public class Reproducer {
   }
 
   private static final void exit() {
-    cdl.countDown();
+    System.exit(-1);
   }
 
 }

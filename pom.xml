@@ -40,6 +40,27 @@
                     <mainClass>com.redhat.ENTMQBR_4988.Reproducer</mainClass>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.jboss.byteman</groupId>
+                <artifactId>byteman-rulecheck-maven-plugin</artifactId>
+                <version>4.0.13</version>
+                <executions>
+                    <execution>
+                        <id>rulecheck-test</id>
+                        <goals>
+                            <goal>rulecheck</goal>
+                        </goals>
+                        <phase>compile</phase>
+                        <configuration>
+                            <scriptDir>${project.basedir}</scriptDir>
+                            <includes>
+                                <include>*.btm</include>
+                            </includes>
+                            <verbose>true</verbose>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 </project>
